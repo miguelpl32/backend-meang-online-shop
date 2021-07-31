@@ -1,0 +1,96 @@
+"Definiciones de los tipos de raíz"
+type Query {
+  "Lista de usuarios registrados en la Base de datos (Clientes / Admins)"
+  users: ResultUsers
+  "Para iniciar sesión de usuario"
+  login(email: String!, password: String!): ResultLogin
+  "Autenticarnos mediante token"
+  me: ResultUser
+}
+
+type Mutation {
+  register(user: UserInput!): ResultUser
+}
+
+"Interface para especificar las propiedades obligatorias en las respuestas"
+interface Result {
+  "Estado de la operación"
+  status: Boolean!
+  "Mensaje de la operacion para dara feedback"
+  message: String!
+}
+
+type ResultUsers implements Result {
+  "Estado de la operación"
+  status: Boolean!
+  "Mensaje de la operacion para dara feedback"
+  message: String!
+  "Lista de usuarios registrados en la Base de datos (Clientes / Admins)"
+  users: [User!]!
+}
+
+type ResultUser implements Result {
+  "Estado de la operación"
+  status: Boolean!
+  "Mensaje de la operacion para dara feedback"
+  message: String!
+  "Informacion del usuario"
+  user: User
+}
+
+type ResultLogin implements Result {
+  "Estado de la operación"
+  status: Boolean!
+  "Mensaje de la operacion para dara feedback"
+  message: String!
+  "Informacion del token del usuario Logueado"
+  token: String
+}
+
+"""
+Vamos a especificar la información detallada del usuario.
+* Vamos a tener en cuenta:
+email = usuario del cliente de la base de datos.
+Fecha de nacimiento y registro en formato ISO
+"""
+type User {
+  "Identificador unico"
+  id: ID!
+  "nombre de pila"
+  name: String!
+  "apellido"
+  lastname: String!
+  "Correo electronico"
+  email: String!
+  "Password asociado a la cuenta"
+  password: String!
+  "Fecha de registro en la Base de datos"
+  registerDate: String!
+  "Fecha de nacimiento"
+  birthday: String!
+  "Permisos del usuario"
+  role: Role!
+}
+
+"Input para añadir los datos del usuario en el registro"
+input UserInput {
+  "Identificador en este caso no obligatorio"
+  id: ID
+  "nombre de pila"
+  name: String!
+  "apellido"
+  lastname: String!
+  "Correo electronico"
+  email: String!
+  "Password asociado a la cuenta"
+  password: String!
+  "Fecha de nacimiento"
+  birthday: String!
+  "Permisos del usuario"
+  role: Role = CLIENT
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
