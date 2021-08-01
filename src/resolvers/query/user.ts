@@ -1,29 +1,32 @@
+// @ts-nocheck
+import { findElements, findOneElement } from '../../lib/db-operation';
+import { COLLECTIONS, EXPIRETIME, MESSAGES } from './../../config/constants';
 import { IResolvers } from 'graphql-tools';
-import JWT from '../lib/jwt';
-import { COLLECTIONS, EXPIRETIME, MESSAGES } from './../config/constants';
+import JWT from './../../lib/jwt';
 import bcrypt from 'bcrypt';
 
-const resolversQuery: IResolvers = {
+const resolversUserQuery: IResolvers = {
   Query: {
     async users(_, __, { db }) {
       try {
         return {
           status: true,
           message: 'Lista de usuarios cargada correctamente',
-          users: await db.collection(COLLECTIONS.USERS).find().toArray(),
+          users: await findElements(db, COLLECTIONS.USERS),
         };
       } catch (error) {
         console.log(error);
         return {
           status: false,
-          message: 'Error al cargar los usuarios. Comprueba qaue tienes correctamente todo.',
+          message:
+            'Error al cargar los usuarios. Comprueba qaue tienes correctamente todo.',
           users: [],
         };
       }
     },
     async login(_, { email, password }, { db }) {
       try {
-        const user = await db.collection(COLLECTIONS.USERS).findOne({ email });
+        const user = await findOneElement(db, COLLECTIONS.USERS, { email });
         if (user == null) {
           return {
             status: false,
@@ -34,7 +37,6 @@ const resolversQuery: IResolvers = {
 
         const passwordCheck = bcrypt.compareSync(password, user.password);
 
-        // const user = await db.collection(COLLECTIONS.USERS).findOne({ email, password });
         if (passwordCheck != null) {
           delete user.password;
           delete user.birthday;
@@ -45,13 +47,16 @@ const resolversQuery: IResolvers = {
           message: !passwordCheck
             ? 'Password y usuario no correctos, sesión no iniciada'
             : 'Usuario cargado correctamente',
-          token: !passwordCheck ? null : new JWT().sign({ user }, EXPIRETIME.H24),
+          token: !passwordCheck
+            ? null
+            : new JWT().sign({ user }, EXPIRETIME.H24),
         };
       } catch (error) {
         console.log(error);
         return {
           status: false,
-          message: 'Error al cargar el usuario. Comprueba que tienes correctamente todo.',
+          message:
+            'Error al cargar el usuario. Comprueba que tienes correctamente todo.',
           token: null,
         };
       }
@@ -74,4 +79,4 @@ const resolversQuery: IResolvers = {
   },
 };
 
-export default resolversQuery;
+export default resolversUserQuery;
