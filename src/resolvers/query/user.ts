@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { IUser } from './../../interfaces/user.interface';
 import { findElements, findOneElement } from '../../lib/db-operation';
 import { COLLECTIONS, EXPIRETIME, MESSAGES } from './../../config/constants';
 import { IResolvers } from 'graphql-tools';
@@ -26,7 +26,9 @@ const resolversUserQuery: IResolvers = {
     },
     async login(_, { email, password }, { db }) {
       try {
-        const user = await findOneElement(db, COLLECTIONS.USERS, { email });
+        const user: IUser = (await findOneElement(db, COLLECTIONS.USERS, {
+          email,
+        })) as IUser;
         if (user == null) {
           return {
             status: false,
@@ -35,12 +37,12 @@ const resolversUserQuery: IResolvers = {
           };
         }
 
-        const passwordCheck = bcrypt.compareSync(password, user.password);
+        const passwordCheck = bcrypt.compareSync(password, user.password || '');
 
         if (passwordCheck != null) {
-          delete user.password;
-          delete user.birthday;
-          delete user.registerDate;
+          user.password = '';
+          user.birthday = '';
+          user.registerDate = '';
         }
         return {
           status: true,
@@ -50,6 +52,7 @@ const resolversUserQuery: IResolvers = {
           token: !passwordCheck
             ? null
             : new JWT().sign({ user }, EXPIRETIME.H24),
+          user,
         };
       } catch (error) {
         console.log(error);
